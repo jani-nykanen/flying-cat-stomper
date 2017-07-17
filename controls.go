@@ -1,3 +1,11 @@
+/**
+ * Controls (keyboard + mouse)
+ *
+ * Author:
+ * (c) 2017 Jani Nykänen
+ *
+ */
+
 package main
 
 import (

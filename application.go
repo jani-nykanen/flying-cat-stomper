@@ -1,3 +1,11 @@
+/**
+ * Application routines
+ *
+ * Author:
+ * (c) 2017 Jani Nykänen
+ *
+ */
+
 package main
 
 import (
@@ -12,6 +20,15 @@ var window *sdl.Window
 
 /// SDL Renderer
 var rend *sdl.Renderer
+
+/// Canvas
+var canvas *sdl.Texture
+
+/// Canvas drawing size
+var canvasSize vec2int
+
+/// Canvas position
+var canvasPos vec2int
 
 /// Ticks, old
 var oldTicks uint32
@@ -30,6 +47,12 @@ var event sdl.Event
 
 /// Is fullscreen
 var isFullscreen bool
+
+// Game scene
+var sceneGame scene
+
+// Current scene
+var currentScene scene
 
 /// FRAMEWAIT Frame wait constant (= 1.0 / FRAMELIMIT)
 const FRAMEWAIT = 17
@@ -70,6 +93,14 @@ func initSDL() int {
 	rend.Clear()
 	rend.Present()
 
+	// Create render target texture aka canvas
+	canvas, err = rend.CreateTexture(sdl.PIXELFORMAT_RGBA8888, sdl.TEXTUREACCESS_TARGET, 320, 240)
+	if err != nil {
+		return 1
+	}
+	windowWidth, windowHeight := window.GetSize()
+	calcCanvasPosAndSize(windowWidth, windowHeight)
+
 	return 0
 }
 
@@ -88,6 +119,17 @@ func initialize() int {
 
 	// Init controls
 	initControls()
+
+	// Create game scene and initilize it
+	sceneGame = gameGetScene()
+	if sceneGame.onInit != nil {
+		if sceneGame.onInit() == 1 {
+			return 1
+		}
+	}
+
+	// Set game the current scene
+	currentScene = sceneGame
 
 	// Set to running
 	isRunning = true
@@ -112,9 +154,38 @@ func events() {
 
 		case *sdl.KeyUpEvent:
 			onKeyUp(uint(t.Keysym.Scancode))
+
+		case *sdl.WindowEvent:
+			if t.Event == sdl.WINDOWEVENT_RESIZED {
+				calcCanvasPosAndSize(int(t.Data1), int(t.Data2))
+			}
 		}
 	}
 
+}
+
+/**
+ * Calculate canvas rendering position and size
+ */
+func calcCanvasPosAndSize(windowWidth, windowHeight int) {
+
+	/*
+	 * Determine canvas position and size by the window size
+	 * and the aspect ratio
+	 */
+	if float32(windowWidth)/float32(windowHeight) >= 320.0/240.0 {
+		canvasSize.x = int(float32(windowHeight) / 240.0 * 320.0)
+		canvasPos.x = windowWidth/2.0 - canvasSize.x/2.0
+		canvasPos.y = 0.0
+
+		canvasSize.y = windowHeight
+	} else {
+		canvasSize.y = int(float32(windowWidth) / 320.0 * 240.0)
+		canvasPos.y = windowHeight/2.0 - canvasSize.y/2.0
+		canvasPos.x = 0.0
+
+		canvasSize.x = windowWidth
+	}
 }
 
 /**
@@ -123,7 +194,10 @@ func events() {
  * Params:
  * deltaTime Time passed since the previous frame
  */
-func update(deltaTime float64) {
+func update(deltaTime uint32) {
+
+	// Calculate time multiplier (1.0 if fps = 60, 2.0 if fps = 30 etc)
+	timeMul := float32(deltaTime) / 1000.0 / (1.0 / 60.0)
 
 	// Leave if Ctrl+Q pressed (no dialogue)
 	if getKeyState(sdl.SCANCODE_LCTRL) == STATE_DOWN &&
@@ -135,6 +209,11 @@ func update(deltaTime float64) {
 	if getKeyState(sdl.SCANCODE_LALT) == STATE_DOWN &&
 		getKeyState(sdl.SCANCODE_RETURN) == STATE_PRESSED {
 		toggleFullscreen()
+	}
+
+	// Update current scene, if update function defined
+	if currentScene.onUpdate != nil {
+		currentScene.onUpdate(timeMul)
 	}
 
 	// Update controls in the end of the frame
@@ -156,6 +235,21 @@ func toggleFullscreen() {
 }
 
 /**
+ * Draw to the canvas
+ */
+func drawToCanvas() {
+
+	rend.SetRenderTarget(canvas)
+
+	// Draw current scene, if drawing function defined
+	if currentScene.onDraw != nil {
+		currentScene.onDraw(rend)
+	}
+
+	rend.SetRenderTarget(nil)
+}
+
+/**
  * Draw a frame
  *
  * Params:
@@ -164,8 +258,15 @@ func toggleFullscreen() {
 func draw() {
 
 	// Clear screen
-	rend.SetDrawColor(170, 170, 170, 255)
+	rend.SetDrawColor(0, 0, 0, 255)
 	rend.Clear()
+
+	// Draw to canvas
+	drawToCanvas()
+
+	// Draw canvas
+	rend.Copy(canvas, &sdl.Rect{X: 0, Y: 0, W: 320, H: 240},
+		&sdl.Rect{X: int32(canvasPos.x), Y: int32(canvasPos.y), W: int32(canvasSize.x), H: int32(canvasSize.y)})
 
 	// Refresh screen
 	rend.Present()
@@ -176,6 +277,12 @@ func draw() {
  * Destroys the application
  */
 func destroy() {
+
+	// Destroy all the scenes
+	if sceneGame.onDestroy != nil {
+		sceneGame.onDestroy()
+	}
+
 	window.Destroy()
 	rend.Destroy()
 }
@@ -201,7 +308,7 @@ func run() int {
 
 		// Do frame events
 		events()
-		update(0.0)
+		update(deltaTime)
 		draw()
 
 		// Time after the frame events
