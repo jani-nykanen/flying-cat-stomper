@@ -14,7 +14,9 @@ package main
 import "github.com/veandco/go-sdl2/sdl"
 
 /// Function type, no arguments
-type Function func() int
+type Function func()
+
+type FunctionAss func(assets) int
 
 /// Function type, float32 argument
 type FunctionFloat32 func(float32)
@@ -24,7 +26,7 @@ type FunctionRend func(*sdl.Renderer)
 
 /// Scene structure
 type scene struct {
-	onInit    Function
+	onInit    FunctionAss
 	onUpdate  FunctionFloat32
 	onDraw    FunctionRend
 	onDestroy Function

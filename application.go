@@ -9,6 +9,9 @@
 package main
 
 import (
+	"errors"
+
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -54,8 +57,31 @@ var sceneGame scene
 // Current scene
 var currentScene scene
 
+// Assets
+var ass assets
+
 /// FRAMEWAIT Frame wait constant (= 1.0 / FRAMELIMIT)
 const FRAMEWAIT = 17
+
+/**
+ * Set an error message
+ *
+ * Params:
+ * msg Error message
+ */
+func setErr(msg string) {
+	err = errors.New(msg)
+}
+
+/**
+ * Get renderer
+ *
+ * Returns:
+ * Renderer
+ */
+func getRend() *sdl.Renderer {
+	return rend
+}
 
 /**
  * Initialize SDL
@@ -101,6 +127,9 @@ func initSDL() int {
 	windowWidth, windowHeight := window.GetSize()
 	calcCanvasPosAndSize(windowWidth, windowHeight)
 
+	// Init IMG addon
+	img.Init(img.INIT_PNG)
+
 	return 0
 }
 
@@ -120,10 +149,17 @@ func initialize() int {
 	// Init controls
 	initControls()
 
+	// Load assets
+	var errCode int
+	ass, errCode = loadAssets(rend)
+	if errCode == 1 {
+		return 1
+	}
+
 	// Create game scene and initilize it
 	sceneGame = gameGetScene()
 	if sceneGame.onInit != nil {
-		if sceneGame.onInit() == 1 {
+		if sceneGame.onInit(ass) == 1 {
 			return 1
 		}
 	}
@@ -283,6 +319,9 @@ func destroy() {
 		sceneGame.onDestroy()
 	}
 
+	// Destroy assets
+	destroyAssets(ass)
+
 	window.Destroy()
 	rend.Destroy()
 }
@@ -326,6 +365,9 @@ func run() int {
 		// Set delta time
 		deltaTime = sdl.GetTicks() - oldTicks
 	}
+
+	// Destroy
+	destroy()
 
 	return 0
 }

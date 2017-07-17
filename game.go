@@ -10,13 +10,18 @@ package main
 
 import "github.com/veandco/go-sdl2/sdl"
 
+/// Font bitmap
+var bmpFont bitmap
+
 /**
  * Initialize the game scene
  *
  * Returns:
  * 0 on success, 1 on error
  */
-func gameInit() int {
+func gameInit(ass assets) int {
+
+	bmpFont = getBitmap(ass, "font")
 
 	return 0
 }
@@ -42,6 +47,9 @@ func gameDraw(rend *sdl.Renderer) {
 	rend.SetDrawColor(170, 170, 170, 255)
 	rend.Clear()
 
+	drawBitmap(bmpFont, 0, 0)
+	drawBitmapRegion(bmpFont,64,64,16,16,256,128)
+
 }
 
 /**
@@ -50,9 +58,8 @@ func gameDraw(rend *sdl.Renderer) {
  * Returns:
  * 0 always
  */
-func gameDestroy() int {
+func gameDestroy() {
 
-	return 0
 }
 
 /**
