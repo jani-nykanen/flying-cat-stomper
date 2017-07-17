@@ -234,6 +234,12 @@ func update(deltaTime uint32) {
 
 	// Calculate time multiplier (1.0 if fps = 60, 2.0 if fps = 30 etc)
 	timeMul := float32(deltaTime) / 1000.0 / (1.0 / 60.0)
+	// Limit time multiplier to avoid unexcepted jumps
+	if timeMul < 0.1 {
+		timeMul = 0.1
+	} else if timeMul > 5.0 {
+		timeMul = 5.0
+	}
 
 	// Leave if Ctrl+Q pressed (no dialogue)
 	if getKeyState(sdl.SCANCODE_LCTRL) == STATE_DOWN &&

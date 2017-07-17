@@ -8,10 +8,24 @@
 
 package main
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"math"
+	"strconv"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 /// Font bitmap
 var bmpFont bitmap
+
+/// Framerate
+var fps int
+
+/// FPS sum
+var fpsSum int
+
+/// FPS count
+var fpsCount int
 
 /**
  * Initialize the game scene
@@ -21,7 +35,14 @@ var bmpFont bitmap
  */
 func gameInit(ass assets) int {
 
-	bmpFont = getBitmap(ass, "font")
+	bmpFont = ass.getBitmap("font")
+
+	fpsCount = 0
+	fpsSum = 0
+	fps = 60
+
+	// Initialize background
+	bgInit(ass)
 
 	return 0
 }
@@ -33,6 +54,20 @@ func gameInit(ass assets) int {
  * timeMul Time multiplier
  */
 func gameUpdate(timeMul float32) {
+
+	// Since timeMul varies from frame to frame, let's take the
+	// average in one second (or actually, a time frame that is at
+	// least a second )
+	fpsSum += int(math.Floor(60.0 / float64(timeMul)))
+	fpsCount++
+	if fpsCount >= 60 {
+		fps = int(float32(fpsSum) / float32(fpsCount))
+		fpsCount = 0
+		fpsSum = 0
+	}
+
+	// Update background
+	bgUpdate(timeMul, 1.0)
 
 }
 
@@ -47,9 +82,11 @@ func gameDraw(rend *sdl.Renderer) {
 	rend.SetDrawColor(170, 170, 170, 255)
 	rend.Clear()
 
-	drawBitmap(bmpFont, 0, 0)
-	drawBitmapRegion(bmpFont,64,64,16,16,256,128)
+	// Draw background
+	bgDraw(rend)
 
+	drawText(bmpFont, "Hello world!", 2, 2)
+	drawText(bmpFont, "FPS: "+strconv.Itoa(fps), 2, 18)
 }
 
 /**

@@ -87,9 +87,12 @@ func loadBitmap(rend *sdl.Renderer, path string, name string) (bitmap, int) {
  */
 func loadBitmaps(rend *sdl.Renderer) (int, []bitmap) {
 
-	// Let's temporarily put list of bitmaps here
+	// Let's temporary put list of bitmaps here
 	bitmaps := [...]stringPair{
 		stringPair{path: "assets/bitmaps/font.png", name: "font"},
+		stringPair{path: "assets/bitmaps/sky.png", name: "sky"},
+		stringPair{path: "assets/bitmaps/mountains.png", name: "mountains"},
+		stringPair{path: "assets/bitmaps/forest.png", name: "forest"},
 	}
 
 	var errCode int
@@ -131,14 +134,12 @@ func loadAssets(rend *sdl.Renderer) (assets, int) {
  * Get a bitmap
  *
  * Params:
- * ass Assets object
  * name Bitmap name
  *
  * Returns:
  * A bitmap
  */
-func getBitmap(ass assets, name string) bitmap {
-
+func (ass *assets) getBitmap(name string) bitmap {
 	for i := 0; i < len(ass.bitmaps); i++ {
 		if ass.bitmaps[i].name == name {
 			return ass.bitmaps[i]
@@ -146,7 +147,6 @@ func getBitmap(ass assets, name string) bitmap {
 	}
 
 	return bitmap{texture: nil, width: 0, height: 0, name: ""}
-
 }
 
 /**
