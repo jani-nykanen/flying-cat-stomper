@@ -12,20 +12,25 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-/// Sky bitmap
-var bmpSky bitmap
+type background struct {
+	/// Sky bitmap
+	bmpSky bitmap
 
-/// Mountains bitmap
-var bmpMountains bitmap
+	/// Mountains bitmap
+	bmpMountains bitmap
 
-/// Forest bitmap
-var bmpForest bitmap
+	/// Forest bitmap
+	bmpForest bitmap
 
-/// Mountain position
-var mountainPos float32
+	/// Mountain position
+	mountainPos float32
 
-/// Forest position
-var forestPost float32
+	/// Forest position
+	forestPost float32
+}
+
+/// Background object
+var bg background
 
 /**
  * Initialize background
@@ -33,14 +38,14 @@ var forestPost float32
  * Params:
  * ass Assets object
  */
-func bgInit(ass assets) {
+func (bg *background) init(ass assets) {
 
-	bmpSky = ass.getBitmap("sky")
-	bmpMountains = ass.getBitmap("mountains")
-	bmpForest = ass.getBitmap("forest")
+	bg.bmpSky = ass.getBitmap("sky")
+	bg.bmpMountains = ass.getBitmap("mountains")
+	bg.bmpForest = ass.getBitmap("forest")
 
-	mountainPos = 0.0
-	forestPost = 0.0
+	bg.mountainPos = 0.0
+	bg.forestPost = 0.0
 
 }
 
@@ -51,17 +56,17 @@ func bgInit(ass assets) {
  * timeMul Time multiplier
  * globalSpeed Global speed multiplier
  */
-func bgUpdate(timeMul float32, globalSpeed float32) {
+func (bg *background) update(timeMul float32, globalSpeed float32) {
 	// Move mountains
-	mountainPos -= globalSpeed * 0.25 * timeMul
-	if mountainPos <= -float32(bmpMountains.width) {
-		mountainPos += float32(bmpMountains.width)
+	bg.mountainPos -= globalSpeed * 0.25 * timeMul
+	if bg.mountainPos <= -float32(bg.bmpMountains.width) {
+		bg.mountainPos += float32(bg.bmpMountains.width)
 	}
 
 	// Move forest
-	forestPost -= globalSpeed * 0.5 * timeMul
-	if forestPost <= -float32(bmpForest.width) {
-		forestPost += float32(bmpForest.width)
+	bg.forestPost -= globalSpeed * 0.5 * timeMul
+	if bg.forestPost <= -float32(bg.bmpForest.width) {
+		bg.forestPost += float32(bg.bmpForest.width)
 	}
 }
 
@@ -71,14 +76,14 @@ func bgUpdate(timeMul float32, globalSpeed float32) {
  * Params:
  * rend Renderer
  */
-func bgDraw(rend *sdl.Renderer) {
-	drawBitmap(bmpSky, 0, -16)
+func (bg *background) draw(rend *sdl.Renderer) {
+	drawBitmap(bg.bmpSky, 0, -16)
 
 	for i := int32(0); i < 2; i++ {
-		drawBitmap(bmpMountains, int32(mountainPos)+i*480, 40)
+		drawBitmap(bg.bmpMountains, int32(bg.mountainPos)+i*480, 40)
 	}
 
 	for i := int32(0); i < 2; i++ {
-		drawBitmap(bmpForest, int32(forestPost)+i*320, 240-96)
+		drawBitmap(bg.bmpForest, int32(bg.forestPost)+i*320, 240-96)
 	}
 }

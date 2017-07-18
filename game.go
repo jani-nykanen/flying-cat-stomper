@@ -9,23 +9,8 @@
 package main
 
 import (
-	"math"
-	"strconv"
-
 	"github.com/veandco/go-sdl2/sdl"
 )
-
-/// Font bitmap
-var bmpFont bitmap
-
-/// Framerate
-var fps int
-
-/// FPS sum
-var fpsSum int
-
-/// FPS count
-var fpsCount int
 
 /**
  * Initialize the game scene
@@ -35,14 +20,11 @@ var fpsCount int
  */
 func gameInit(ass assets) int {
 
-	bmpFont = ass.getBitmap("font")
-
-	fpsCount = 0
-	fpsSum = 0
-	fps = 60
-
 	// Initialize background
-	bgInit(ass)
+	bg.init(ass)
+
+	// Init hud
+	hud.init(ass)
 
 	return 0
 }
@@ -55,19 +37,11 @@ func gameInit(ass assets) int {
  */
 func gameUpdate(timeMul float32) {
 
-	// Since timeMul varies from frame to frame, let's take the
-	// average in one second (or actually, a time frame that is at
-	// least a second )
-	fpsSum += int(math.Floor(60.0 / float64(timeMul)))
-	fpsCount++
-	if fpsCount >= 60 {
-		fps = int(float32(fpsSum) / float32(fpsCount))
-		fpsCount = 0
-		fpsSum = 0
-	}
-
 	// Update background
-	bgUpdate(timeMul, 1.0)
+	bg.update(timeMul, 1.0)
+
+	// Update HUD
+	hud.update(timeMul)
 
 }
 
@@ -83,10 +57,10 @@ func gameDraw(rend *sdl.Renderer) {
 	rend.Clear()
 
 	// Draw background
-	bgDraw(rend)
+	bg.draw(rend)
 
-	drawText(bmpFont, "Hello world!", 2, 2)
-	drawText(bmpFont, "FPS: "+strconv.Itoa(fps), 2, 18)
+	// Draw HUD
+	hud.draw(rend)
 }
 
 /**

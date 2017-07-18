@@ -25,6 +25,12 @@ const (
 /// Keys
 var keystate [MAX_KEY]int
 
+/// Cursor pos
+var cursorPos vec2int
+
+/// Virtual cursor pos
+var vpos vec2int
+
 /**
  * Init controls
  */
@@ -65,6 +71,18 @@ func onKeyUp(key uint) {
 }
 
 /**
+ * Triggers when mouse is moved
+ *
+ * Params:
+ * x Mouse X
+ * y Mouse Y
+ */
+func onMouseMove(x, y int32) {
+	cursorPos.x = int(x)
+	cursorPos.y = int(y)
+}
+
+/**
  * Update controls
  */
 func updateControls() {
@@ -76,6 +94,19 @@ func updateControls() {
 			keystate[i] = STATE_UP
 		}
 	}
+}
+
+/**
+ * Set virtual cursor position, so it's always in the canvas
+ *
+ * Params:
+ * winSize Window size
+ * canvasSize Canvas size (actual size, not scaled)
+ * canvasPos Canvas position on screen
+ */
+func setCursorVpos(winSize vec2int, canvasSize vec2int, canvasPos vec2int) {
+	vpos.x = int(float32(cursorPos.x-canvasPos.x) / float32(winSize.x-canvasPos.x*2) * float32(canvasSize.x))
+	vpos.y = int(float32(cursorPos.y-canvasPos.y) / float32(winSize.y-canvasPos.y*2) * float32(canvasSize.y))
 }
 
 /**
@@ -91,4 +122,14 @@ func getKeyState(scancode sdl.Scancode) int {
 	}
 
 	return keystate[key]
+}
+
+/**
+ * Get the virtual cursor position
+ *
+ * Returns:
+ * Cursor virtual position
+ */
+func getCursorPos() vec2int {
+	return vpos
 }

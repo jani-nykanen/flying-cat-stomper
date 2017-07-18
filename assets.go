@@ -90,9 +90,13 @@ func loadBitmaps(rend *sdl.Renderer) (int, []bitmap) {
 	// Let's temporary put list of bitmaps here
 	bitmaps := [...]stringPair{
 		stringPair{path: "assets/bitmaps/font.png", name: "font"},
+		stringPair{path: "assets/bitmaps/font_big.png", name: "fontBig"},
 		stringPair{path: "assets/bitmaps/sky.png", name: "sky"},
 		stringPair{path: "assets/bitmaps/mountains.png", name: "mountains"},
 		stringPair{path: "assets/bitmaps/forest.png", name: "forest"},
+		stringPair{path: "assets/bitmaps/cursor.png", name: "cursor"},
+		stringPair{path: "assets/bitmaps/hud.png", name: "hud"},
+		stringPair{path: "assets/bitmaps/fontMedium.png", name: "fontMedium"},
 	}
 
 	var errCode int

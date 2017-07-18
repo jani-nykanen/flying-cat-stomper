@@ -15,6 +15,13 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+/**
+ * TODO:
+ * Add type Application struct { ... }
+ * and var app Application and this stuff
+ * inside it
+ */
+
 /// Is application running
 var isRunning bool
 
@@ -59,6 +66,9 @@ var currentScene scene
 
 // Assets
 var ass assets
+
+// Cursor
+var bmpCursor bitmap
 
 /// FRAMEWAIT Frame wait constant (= 1.0 / FRAMELIMIT)
 const FRAMEWAIT = 17
@@ -150,11 +160,14 @@ func initialize() int {
 	initControls()
 
 	// Load assets
+	// (Normally this would happen in external thread, but no time for that)
 	var errCode int
 	ass, errCode = loadAssets(rend)
 	if errCode == 1 {
 		return 1
 	}
+
+	bmpCursor = ass.getBitmap("cursor")
 
 	// Create game scene and initilize it
 	sceneGame = gameGetScene()
@@ -190,6 +203,9 @@ func events() {
 
 		case *sdl.KeyUpEvent:
 			onKeyUp(uint(t.Keysym.Scancode))
+
+		case *sdl.MouseMotionEvent:
+			onMouseMove(t.X, t.Y)
 
 		case *sdl.WindowEvent:
 			if t.Event == sdl.WINDOWEVENT_RESIZED {
@@ -232,11 +248,15 @@ func calcCanvasPosAndSize(windowWidth, windowHeight int) {
  */
 func update(deltaTime uint32) {
 
+	// Set cursor vpos before anything else
+	w, h := window.GetSize()
+	setCursorVpos(vec2int{x: int(w), y: int(h)}, vec2int{x: 320, y: 240}, canvasPos)
+
 	// Calculate time multiplier (1.0 if fps = 60, 2.0 if fps = 30 etc)
 	timeMul := float32(deltaTime) / 1000.0 / (1.0 / 60.0)
 	// Limit time multiplier to avoid unexcepted jumps
-	if timeMul < 0.1 {
-		timeMul = 0.1
+	if timeMul <= 0.0 {
+		timeMul = 1.0
 	} else if timeMul > 5.0 {
 		timeMul = 5.0
 	}
@@ -287,6 +307,10 @@ func drawToCanvas() {
 	if currentScene.onDraw != nil {
 		currentScene.onDraw(rend)
 	}
+
+	// Draw cursor (always visible)
+	cpos := getCursorPos()
+	drawBitmap(bmpCursor, int32(cpos.x), int32(cpos.y))
 
 	rend.SetRenderTarget(nil)
 }
