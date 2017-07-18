@@ -12,6 +12,9 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+/// Global speed
+var globalSpeed float32
+
 /**
  * Initialize the game scene
  *
@@ -20,11 +23,17 @@ import (
  */
 func gameInit(ass assets) int {
 
+	// Set global speed
+	globalSpeed = 1.0
+
 	// Initialize background
 	bg.init(ass)
 
 	// Init hud
 	hud.init(ass)
+
+	// Init game objects
+	gobj.init(ass)
 
 	return 0
 }
@@ -39,6 +48,9 @@ func gameUpdate(timeMul float32) {
 
 	// Update background
 	bg.update(timeMul, 1.0)
+
+	// Update game objects
+	gobj.update(timeMul, globalSpeed)
 
 	// Update HUD
 	hud.update(timeMul)
@@ -58,6 +70,9 @@ func gameDraw(rend *sdl.Renderer) {
 
 	// Draw background
 	bg.draw(rend)
+
+	// Draw game objects
+	gobj.draw(rend)
 
 	// Draw HUD
 	hud.draw(rend)
