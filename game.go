@@ -47,7 +47,7 @@ func gameInit(ass assets) int {
 func gameUpdate(timeMul float32) {
 
 	// Update background
-	bg.update(timeMul, 1.0)
+	bg.update(timeMul, globalSpeed)
 
 	// Update game objects
 	gobj.update(timeMul, globalSpeed)

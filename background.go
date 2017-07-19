@@ -58,7 +58,7 @@ func (bg *background) init(ass assets) {
  */
 func (bg *background) update(timeMul float32, globalSpeed float32) {
 	// Move mountains
-	bg.mountainPos -= globalSpeed * 0.25 * timeMul
+	bg.mountainPos -= globalSpeed * 0.2 * timeMul
 	if bg.mountainPos <= -float32(bg.bmpMountains.width) {
 		bg.mountainPos += float32(bg.bmpMountains.width)
 	}
