@@ -204,6 +204,13 @@ func events() {
 		case *sdl.KeyUpEvent:
 			onKeyUp(uint(t.Keysym.Scancode))
 
+		case *sdl.MouseButtonEvent:
+			if t.Type == sdl.MOUSEBUTTONDOWN {
+				onMouseDown(uint(t.Button))
+			} else if t.Type == sdl.MOUSEBUTTONUP {
+				onMouseUp(uint(t.Button))
+			}
+
 		case *sdl.MouseMotionEvent:
 			onMouseMove(t.X, t.Y)
 
@@ -262,14 +269,13 @@ func update(deltaTime uint32) {
 	}
 
 	// Leave if Ctrl+Q pressed (no dialogue)
-	if getKeyState(sdl.SCANCODE_LCTRL) == STATE_DOWN &&
-		getKeyState(sdl.SCANCODE_Q) == STATE_PRESSED {
+	if getKeyState(sdl.SCANCODE_LCTRL) == StateDown &&
+		getKeyState(sdl.SCANCODE_Q) == StatePressed {
 		isRunning = false
 	}
 
-	// If Alt+Enter pressed, go to the full screen mode
-	if getKeyState(sdl.SCANCODE_LALT) == STATE_DOWN &&
-		getKeyState(sdl.SCANCODE_RETURN) == STATE_PRESSED {
+	// If F4 is pressed, go to the full screen mode
+	if getKeyState(sdl.SCANCODE_F4) == StatePressed {
 		toggleFullscreen()
 	}
 

@@ -18,8 +18,10 @@ import (
 type gameobjects struct {
 	cats     [32]cat
 	bmpCats  bitmap
+	bmpBunny bitmap
 	genTimer float32
 	catPos   float32
+	pl       player
 }
 
 /// Game objects global object
@@ -34,11 +36,15 @@ var gobj gameobjects
 func (gob *gameobjects) init(ass assets) {
 	// Set bitmaps
 	gob.bmpCats = ass.getBitmap("cats")
+	gob.bmpBunny = ass.getBitmap("bunny")
 
 	// Create cats
 	for i := 0; i < len(gob.cats); i++ {
 		gob.cats[i] = newCat()
 	}
+
+	// Init player
+	gob.pl.init(vec2{x: 64, y: 80})
 
 	// Set generator values
 	gob.genTimer = 0.0
@@ -61,7 +67,7 @@ func (gob *gameobjects) putCat(x, y float32, id int) {
 	// Go through the array of cats
 	for i := 0; i < len(gob.cats); i++ {
 		// If not exist, create
-		if gob.cats[i].exist == false {
+		if gob.cats[i].exist == false && gob.cats[i].dead == false {
 			gob.cats[i].createCat(x, y, id)
 			break
 		}
@@ -76,11 +82,17 @@ func (gob *gameobjects) putCat(x, y float32, id int) {
  * globalSpeed Global speed multiplier
  */
 func (gob *gameobjects) update(timeMul, globalSpeed float32) {
+
+	// Update cats
 	for i := 0; i < len(gob.cats); i++ {
 		gob.cats[i].update(timeMul, globalSpeed)
+		gob.cats[i].onPlayerCollision(&gob.pl)
 	}
 
-	if getKeyState(sdl.SCANCODE_X) == STATE_PRESSED {
+	// Update player
+	gob.pl.update(timeMul)
+
+	if getKeyState(sdl.SCANCODE_X) == StatePressed {
 		gob.putCat(320+24, 48+rand.Float32()*(240.0-64), 0)
 	}
 
@@ -89,7 +101,7 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 	if gob.genTimer <= 0.0 {
 
 		posDelta := rand.Float32()*(160) - 80
-		if (posDelta > 0.0 && gob.catPos+posDelta > 240-48) || (posDelta < 0.0 && gob.catPos+posDelta < 64) {
+		if (posDelta > 0.0 && gob.catPos+posDelta > 240-32) || (posDelta < 0.0 && gob.catPos+posDelta < 80) {
 			posDelta *= -1
 		}
 		gob.catPos += posDelta
@@ -106,7 +118,12 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
  * rend Renderer
  */
 func (gob *gameobjects) draw(rend *sdl.Renderer) {
+
+	// Draw cats
 	for i := 0; i < len(gob.cats); i++ {
 		gob.cats[i].draw(gob.bmpCats, rend)
 	}
+
+	// Draw player
+	gob.pl.draw(gob.bmpBunny, rend)
 }

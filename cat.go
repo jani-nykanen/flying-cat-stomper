@@ -22,6 +22,7 @@ type cat struct {
 	spr    sprite
 	exist  bool
 	sinMod float32
+	dead   bool
 }
 
 /**
@@ -53,6 +54,7 @@ func (c *cat) createCat(x, y float32, id int) {
 	c.starty = y
 	c.typeid = id
 	c.sinMod = rand.Float32() * 2 * math.Pi
+	c.dead = false
 
 }
 
@@ -66,6 +68,15 @@ func (c *cat) createCat(x, y float32, id int) {
 func (c *cat) update(timeMul, globalSpeed float32) {
 
 	if c.exist == false {
+		if c.dead {
+			c.pos.y += 0.75 * timeMul
+			c.pos.x -= globalSpeed * timeMul
+			c.spr.animate(1, 0, 5, 5, timeMul)
+			if c.spr.currentFrame == 5 {
+				c.dead = false
+				return
+			}
+		}
 		return
 	}
 
@@ -88,6 +99,34 @@ func (c *cat) update(timeMul, globalSpeed float32) {
 }
 
 /**
+ * Cat-player collision
+ *
+ * Param:
+ * pl Player object
+ */
+func (c *cat) onPlayerCollision(pl *player) {
+	if c.exist == false {
+		return
+	}
+
+	if pl.speed.y > 0.0 && pl.pos.x+8 > c.pos.x-24 && pl.pos.x-8 < c.pos.x+24 && pl.pos.y > c.pos.y-12 && pl.pos.y < c.pos.y-4 {
+		c.exist = false
+
+		pl.speed.y = -4.0
+
+		pl.catTouchTimer = 15
+		pl.doubleJump = false
+
+		c.dead = true
+		c.spr.currentFrame = 0
+		c.spr.changeFrameCount = 0
+		c.spr.currentRow = 1
+
+		status.score++
+	}
+}
+
+/**
  * Draw a cat
  *
  * Params:
@@ -96,7 +135,7 @@ func (c *cat) update(timeMul, globalSpeed float32) {
  */
 func (c *cat) draw(bmp bitmap, rend *sdl.Renderer) {
 
-	if c.exist == false {
+	if c.exist == false && !c.dead {
 		return
 	}
 

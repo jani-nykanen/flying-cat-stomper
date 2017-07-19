@@ -24,7 +24,7 @@ var globalSpeed float32
 func gameInit(ass assets) int {
 
 	// Set global speed
-	globalSpeed = 1.0
+	globalSpeed = 1.5
 
 	// Initialize background
 	bg.init(ass)
@@ -34,6 +34,9 @@ func gameInit(ass assets) int {
 
 	// Init game objects
 	gobj.init(ass)
+
+	// Init status
+	initStatus()
 
 	return 0
 }
@@ -54,6 +57,11 @@ func gameUpdate(timeMul float32) {
 
 	// Update HUD
 	hud.update(timeMul)
+
+	// Update best score if needed
+	if status.score > status.best {
+		status.best = status.score
+	}
 
 }
 

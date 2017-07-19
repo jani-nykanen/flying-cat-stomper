@@ -101,11 +101,11 @@ func (hud *HUD) update(timeMul float32) {
 func (hud *HUD) draw(rend *sdl.Renderer) {
 	// Draw score
 	drawBitmapRegion(hud.bmpHud, 0, 0, 48, 12, 160-24, 2)
-	drawText(hud.bmpFontBig, "1", 160-16, 11)
+	drawText(hud.bmpFontBig, strconv.Itoa(int(status.score)), 160-16, 11)
 
 	// Draw best
 	drawBitmapRegion(hud.bmpHud, 0, 12, 48, 12, 320-24-24, 2)
-	drawText(hud.bmpFontMedium, "1", 320-24-11, 13)
+	drawText(hud.bmpFontMedium, strconv.Itoa(int(status.best)), 320-24-11, 13)
 
 	drawText(hud.bmpFont, "FPS: "+strconv.Itoa(hud.fps), 2, 240-16)
 }

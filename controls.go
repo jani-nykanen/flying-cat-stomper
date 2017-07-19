@@ -6,6 +6,10 @@
  *
  */
 
+///
+/// TODO: Add 'type controls struct' !
+///
+
 package main
 
 import (
@@ -14,16 +18,20 @@ import (
 
 /// Key states
 const (
-	STATE_UP        = 0
-	STATE_DOWN      = 1
-	STATE_PRESSED   = 2
-	STATED_RELEASED = 3
+	StateUp       = 0
+	StateDown     = 1
+	StatePressed  = 2
+	StateReleased = 3
 
-	MAX_KEY = 256
+	MaxKey    = 256
+	MaxButton = 16
 )
 
 /// Keys
-var keystate [MAX_KEY]int
+var keystate [MaxKey]int
+
+/// Mouse buttons
+var buttonstate [MaxButton]int
 
 /// Cursor pos
 var cursorPos vec2int
@@ -36,7 +44,7 @@ var vpos vec2int
  */
 func initControls() {
 	for i := 0; i < len(keystate); i++ {
-		keystate[i] = STATE_UP
+		keystate[i] = StateUp
 	}
 }
 
@@ -48,11 +56,11 @@ func initControls() {
  */
 func onKeyDown(key uint) {
 	// If key is out of range or already down, ignore
-	if key >= MAX_KEY || keystate[key] == STATE_DOWN {
+	if key >= MaxKey || keystate[key] == StateDown {
 		return
 	}
 	// Set key value to pressed
-	keystate[key] = STATE_PRESSED
+	keystate[key] = StatePressed
 }
 
 /**
@@ -63,11 +71,39 @@ func onKeyDown(key uint) {
  */
 func onKeyUp(key uint) {
 	// If key is out of range or already up, ignore
-	if key >= MAX_KEY || keystate[key] == STATE_UP {
+	if key >= MaxKey || keystate[key] == StateUp {
 		return
 	}
 	// Set key value to released
-	keystate[key] = STATED_RELEASED
+	keystate[key] = StateReleased
+}
+
+/**
+ * Triggers when mouse button is pressed down
+ *
+ * Params:
+ * button Mouse button
+ */
+func onMouseDown(button uint) {
+	if button >= MaxButton {
+		return
+	}
+
+	buttonstate[button] = StatePressed
+}
+
+/**
+ * Triggers when mouse button is released
+ *
+ * Params:
+ * button Mouse button
+ */
+func onMouseUp(button uint) {
+	if button >= MaxButton {
+		return
+	}
+
+	buttonstate[button] = StateReleased
 }
 
 /**
@@ -86,12 +122,23 @@ func onMouseMove(x, y int32) {
  * Update controls
  */
 func updateControls() {
-	for i := 0; i < MAX_KEY; i++ {
-		if keystate[i] == STATE_PRESSED {
-			keystate[i] = STATE_DOWN
+	for i := 0; i < MaxKey; i++ {
+		// Check keyboard keys
+		if keystate[i] == StatePressed {
+			keystate[i] = StateDown
 
-		} else if keystate[i] == STATED_RELEASED {
-			keystate[i] = STATE_UP
+		} else if keystate[i] == StateReleased {
+			keystate[i] = StateUp
+		}
+
+		// Check mouse buttons
+		if i < MaxButton {
+			if buttonstate[i] == StatePressed {
+				buttonstate[i] = StateDown
+
+			} else if buttonstate[i] == StateReleased {
+				buttonstate[i] = StateUp
+			}
 		}
 	}
 }
@@ -117,11 +164,25 @@ func setCursorVpos(winSize vec2int, canvasSize vec2int, canvasPos vec2int) {
  */
 func getKeyState(scancode sdl.Scancode) int {
 	key := uint(scancode)
-	if key >= MAX_KEY {
-		return STATE_UP
+	if key >= MaxKey {
+		return StateUp
 	}
 
 	return keystate[key]
+}
+
+/**
+ * Get the mouse button state
+ *
+ * Params:
+ * scancode Button index
+ */
+func getMouseButtonState(button uint) int {
+	if button >= MaxButton {
+		return StateUp
+	}
+
+	return buttonstate[button]
 }
 
 /**
