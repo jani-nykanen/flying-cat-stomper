@@ -16,15 +16,17 @@ import (
 
 /// Game objects
 type gameobjects struct {
-	cats     [32]cat
-	bmpCats  bitmap
-	bmpBunny bitmap
-	bmpStar  bitmap
-	genTimer float32
-	catPos   float32
-	pl       player
-	stars    [8]star
-	messages [8]message
+	cats      [32]cat
+	bmpCats   bitmap
+	bmpBunny  bitmap
+	bmpStar   bitmap
+	sndHurt   sound
+	genTimer  float32
+	catPos    float32
+	pl        player
+	stars     [8]star
+	messages  [8]message
+	spcCount1 int
 }
 
 /// Game objects global object
@@ -42,17 +44,24 @@ func (gob *gameobjects) init(ass assets) {
 	gob.bmpBunny = ass.getBitmap("bunny")
 	gob.bmpStar = ass.getBitmap("star")
 
+	// Set sounds
+	gob.sndHurt = ass.getSound("hurt")
+
+	// Set seed
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	// Create cats
 	for i := 0; i < len(gob.cats); i++ {
 		gob.cats[i] = newCat()
 	}
 
 	// Init player
-	gob.pl.init(vec2{x: 64, y: 80})
+	gob.pl.init(vec2{x: 64, y: 80}, ass)
 
 	// Set generator values
 	gob.genTimer = 0.0
 	gob.catPos = 120.0
+	gob.spcCount1 = int(rand.Float32()*4 + 4)
 
 	// Init stars
 	for i := 0; i < 8; i++ {
@@ -64,8 +73,6 @@ func (gob *gameobjects) init(ass assets) {
 		gob.messages[i] = newMessage()
 	}
 
-	// Set seed
-	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 /**
@@ -120,6 +127,8 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 		gob.messages[i].update(timeMul)
 	}
 
+	targetID := 0
+
 	// Generate cats when the timer hits zero
 	gob.genTimer -= 1.0 * globalSpeed * timeMul
 	if gob.genTimer <= 0.0 {
@@ -129,7 +138,16 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 			posDelta *= -1
 		}
 		gob.catPos += posDelta
-		gob.putCat(320+24, gob.catPos, 0)
+
+		if gob.catPos > 96 && gob.catPos < 192 {
+			gob.spcCount1--
+			if gob.spcCount1 <= 0 {
+				targetID = 1
+				gob.spcCount1 = int(rand.Float32() + 4)
+			}
+		}
+
+		gob.putCat(320+24, gob.catPos, targetID)
 
 		gob.genTimer += 90.0
 	}

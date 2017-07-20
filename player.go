@@ -58,7 +58,7 @@ func (wh *whitening) create(pos vec2, column, row int) {
  */
 func (wh *whitening) update(timeMul float32) {
 	if wh.exist {
-		wh.timer -= 1.75 * timeMul
+		wh.timer -= 2.0 * timeMul
 		if wh.timer <= 0.0 {
 			wh.exist = false
 		}
@@ -94,6 +94,7 @@ type player struct {
 	doubleJump    bool
 	white         [16]whitening
 	whiteTimer    float32
+	bmpJump       sound
 }
 
 /**
@@ -102,7 +103,7 @@ type player struct {
  * Params:
  * pos New position
  */
-func (pl *player) init(pos vec2) {
+func (pl *player) init(pos vec2, ass assets) {
 	pl.pos = pos
 	pl.spr = createSprite(48, 48)
 	pl.spr.currentFrame = 1
@@ -116,6 +117,8 @@ func (pl *player) init(pos vec2) {
 		pl.white[i] = newWhitening()
 	}
 	pl.whiteTimer = 10.0
+
+	pl.bmpJump = ass.getSound("jump")
 }
 
 /**
@@ -150,6 +153,7 @@ func (pl *player) control() {
 		if !pl.doubleJump {
 			pl.doubleJump = true
 			pl.speed.y = -4.0
+			pl.bmpJump.play(0.8)
 		}
 	}
 
@@ -235,7 +239,7 @@ func (pl *player) createWhite(timeMul float32) {
 			}
 		}
 
-		pl.whiteTimer += 5.0
+		pl.whiteTimer += 4.0
 	}
 }
 

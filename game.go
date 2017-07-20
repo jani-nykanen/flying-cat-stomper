@@ -15,6 +15,9 @@ import (
 /// Global speed
 var globalSpeed float32
 
+/// Speed up timer
+var speedUpTimer float32
+
 /**
  * Initialize the game scene
  *
@@ -48,6 +51,13 @@ func gameInit(ass assets) int {
  * timeMul Time multiplier
  */
 func gameUpdate(timeMul float32) {
+
+	// Update speed
+	speedUpTimer += 1.0 * timeMul
+	if speedUpTimer >= 60.0*7.5 {
+		speedUpTimer -= 60.0 * 7.5
+		globalSpeed += 0.15
+	}
 
 	// Update background
 	bg.update(timeMul, globalSpeed)

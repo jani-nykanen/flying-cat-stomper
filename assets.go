@@ -34,6 +34,7 @@ type bitmap struct {
 /// A struct that contains all the assets
 type assets struct {
 	bitmaps []bitmap
+	sounds  []sound
 	music   *mix.Music
 }
 
@@ -120,6 +121,35 @@ func loadBitmaps(rend *sdl.Renderer) (int, []bitmap) {
 }
 
 /**
+ * Load sounds
+ *
+ * Returns:
+ * Error code, 0 on success
+ * An array of sounds
+ */
+func loadSounds() (int, []sound) {
+
+	// Let's temporary put list of bitmaps here
+	soundsArr := [...]stringPair{
+		stringPair{path: "assets/sounds/hurt.wav", name: "hurt"},
+		stringPair{path: "assets/sounds/jump.wav", name: "jump"},
+	}
+
+	var errCode int
+
+	// Create a slice for bitmaps and load bitmaps there
+	sounds := make([]sound, len(soundsArr))
+	for i := 0; i < len(soundsArr); i++ {
+		sounds[i], errCode = loadSound(soundsArr[i].path, soundsArr[i].name)
+		if errCode == 1 {
+			return 0, sounds
+		}
+	}
+
+	return 0, sounds
+}
+
+/**
  * Load assets
  *
  * Return:
@@ -134,6 +164,12 @@ func loadAssets(rend *sdl.Renderer) (assets, int) {
 
 	// Load bitmaps
 	errCode, ass.bitmaps = loadBitmaps(rend)
+	if errCode == 1 {
+		return ass, 1
+	}
+
+	// Load sounds
+	errCode, ass.sounds = loadSounds()
 	if errCode == 1 {
 		return ass, 1
 	}
@@ -166,6 +202,25 @@ func (ass *assets) getBitmap(name string) bitmap {
 	}
 
 	return bitmap{texture: nil, width: 0, height: 0, name: ""}
+}
+
+/**
+ * Get a sound
+ *
+ * Params:
+ * name Sound name
+ *
+ * Returns:
+ * A sound
+ */
+func (ass *assets) getSound(name string) sound {
+	for i := 0; i < len(ass.sounds); i++ {
+		if ass.sounds[i].name == name {
+			return ass.sounds[i]
+		}
+	}
+
+	return sound{chunk: nil, played: false, channel: 0, name: ""}
 }
 
 /**

@@ -16,13 +16,14 @@ import (
 
 /// Cat struct
 type cat struct {
-	pos    vec2
-	starty float32
-	typeid int
-	spr    sprite
-	exist  bool
-	sinMod float32
-	dead   bool
+	pos        vec2
+	starty     float32
+	typeid     int
+	spr        sprite
+	exist      bool
+	sinMod     float32
+	dead       bool
+	waveHeight float32
 }
 
 /**
@@ -35,6 +36,7 @@ func newCat() cat {
 	var c cat
 	c.exist = false
 	c.spr = createSprite(48, 48)
+	c.waveHeight = 0.0
 	return c
 }
 
@@ -56,6 +58,9 @@ func (c *cat) createCat(x, y float32, id int) {
 	c.sinMod = rand.Float32() * 2 * math.Pi
 	c.dead = false
 
+	if id == 1 {
+		c.waveHeight = float32(math.Min(math.Abs(float64(y-32)), math.Abs(float64(y-(320-24)))))
+	}
 }
 
 /**
@@ -71,7 +76,7 @@ func (c *cat) update(timeMul, globalSpeed float32) {
 		if c.dead {
 			c.pos.y += 0.75 * timeMul
 			c.pos.x -= globalSpeed * timeMul
-			c.spr.animate(1, 0, 5, 5, timeMul)
+			c.spr.animate(c.typeid*2+1, 0, 5, 5, timeMul)
 			if c.spr.currentFrame == 5 {
 				c.dead = false
 				return
@@ -88,13 +93,22 @@ func (c *cat) update(timeMul, globalSpeed float32) {
 	}
 
 	// Update sin modifier
-	c.sinMod += 0.05 * timeMul
+	if c.typeid == 0 {
+		c.sinMod += 0.05 * timeMul
+		// Set y position
+		c.pos.y = c.starty + float32(math.Sin(float64(c.sinMod))*8)
+	} else {
+		c.sinMod += 0.03 * (globalSpeed / 2.0) * timeMul
+		c.pos.y = c.starty + float32(math.Floor((math.Sin(float64(c.sinMod)) * float64(c.waveHeight/2.0))))
+	}
 
-	// Set y position
-	c.pos.y = c.starty + float32(math.Sin(float64(c.sinMod))*8)
+	animSpeed := float32(6.0)
+	if c.typeid == 1 {
+		animSpeed = 3.0
+	}
 
 	// Animate
-	c.spr.animate(0, 0, 3, 6.0, timeMul)
+	c.spr.animate(c.typeid*2, 0, 3, animSpeed, timeMul)
 
 }
 
@@ -120,10 +134,10 @@ func (c *cat) onPlayerCollision(pl *player) {
 		c.dead = true
 		c.spr.currentFrame = 0
 		c.spr.changeFrameCount = 0
-		c.spr.currentRow = 1
+		c.spr.currentRow = 2*c.typeid + 1
 
 		status.killCount++
-		status.score += status.killCount
+		status.score += status.killCount * uint(c.typeid+1)
 
 		// Create star (or "pow!")
 		for i := 0; i < len(gobj.stars); i++ {
@@ -136,10 +150,12 @@ func (c *cat) onPlayerCollision(pl *player) {
 		// Create a message
 		for i := 0; i < len(gobj.messages); i++ {
 			if gobj.messages[i].exist == false {
-				gobj.messages[i].create(vec2{x: pl.pos.x, y: c.pos.y - 4}, int(status.killCount))
+				gobj.messages[i].create(vec2{x: pl.pos.x, y: c.pos.y - 4}, int(status.killCount*uint(c.typeid+1)))
 				break
 			}
 		}
+
+		gobj.sndHurt.play(0.5)
 	}
 }
 
