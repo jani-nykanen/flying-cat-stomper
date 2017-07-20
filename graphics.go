@@ -106,3 +106,18 @@ func drawText(font bitmap, text string, x int32, y int32) {
 	}
 
 }
+
+/**
+ * Draw text with a bitmap font, centered
+ *
+ * Params:
+ * {See drawText}
+ */
+func drawCenteredText(font bitmap, text string, x int32, y int32) {
+
+	cw := int32(font.width / 16) // Character width
+	x -= int32(float32(cw) * float32(len(text)) / 2.0 * (3.0 / 5.0))
+
+	drawText(font, text, x, y)
+
+}

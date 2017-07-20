@@ -125,12 +125,12 @@ func (pl *player) control() {
 
 	if pl.isPassive {
 		if getMouseButtonState(1) == StatePressed {
-			pl.speed.y = -4.0
+			pl.speed.y = -5.0
 			pl.isPassive = false
 			pl.doubleJump = false
-		} else {
 			return
 		}
+		return
 	}
 
 	// Horizontal movement

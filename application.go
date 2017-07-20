@@ -189,6 +189,7 @@ func initialize() int {
 	currentScene = sceneGame
 
 	// Set music playing
+	mix.VolumeMusic(96)
 	ass.music.FadeIn(-1, 1000)
 
 	// Set to running

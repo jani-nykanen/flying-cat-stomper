@@ -24,7 +24,7 @@ var globalSpeed float32
 func gameInit(ass assets) int {
 
 	// Set global speed
-	globalSpeed = 3.0
+	globalSpeed = 1.5
 
 	// Initialize background
 	bg.init(ass)

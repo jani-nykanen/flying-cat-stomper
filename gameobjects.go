@@ -19,9 +19,12 @@ type gameobjects struct {
 	cats     [32]cat
 	bmpCats  bitmap
 	bmpBunny bitmap
+	bmpStar  bitmap
 	genTimer float32
 	catPos   float32
 	pl       player
+	stars    [8]star
+	messages [8]message
 }
 
 /// Game objects global object
@@ -37,6 +40,7 @@ func (gob *gameobjects) init(ass assets) {
 	// Set bitmaps
 	gob.bmpCats = ass.getBitmap("cats")
 	gob.bmpBunny = ass.getBitmap("bunny")
+	gob.bmpStar = ass.getBitmap("star")
 
 	// Create cats
 	for i := 0; i < len(gob.cats); i++ {
@@ -49,6 +53,16 @@ func (gob *gameobjects) init(ass assets) {
 	// Set generator values
 	gob.genTimer = 0.0
 	gob.catPos = 120.0
+
+	// Init stars
+	for i := 0; i < 8; i++ {
+		gob.stars[i] = newStar()
+	}
+
+	// Init messages
+	for i := 0; i < 8; i++ {
+		gob.messages[i] = newMessage()
+	}
 
 	// Set seed
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -96,6 +110,16 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 		gob.putCat(320+24, 48+rand.Float32()*(240.0-64), 0)
 	}
 
+	// Update stars
+	for i := 0; i < 8; i++ {
+		gob.stars[i].update(timeMul)
+	}
+
+	// Update messages
+	for i := 0; i < 8; i++ {
+		gob.messages[i].update(timeMul)
+	}
+
 	// Generate cats when the timer hits zero
 	gob.genTimer -= 1.0 * globalSpeed * timeMul
 	if gob.genTimer <= 0.0 {
@@ -124,6 +148,16 @@ func (gob *gameobjects) draw(rend *sdl.Renderer) {
 		gob.cats[i].draw(gob.bmpCats, rend)
 	}
 
+	// Draw stars
+	for i := 0; i < 8; i++ {
+		gob.stars[i].draw(gob.bmpStar, rend)
+	}
+
 	// Draw player
 	gob.pl.draw(gob.bmpBunny, rend)
+
+	// Draw messages
+	for i := 0; i < 8; i++ {
+		gob.messages[i].draw(hud.bmpFontMedium, rend)
+	}
 }

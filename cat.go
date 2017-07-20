@@ -122,7 +122,24 @@ func (c *cat) onPlayerCollision(pl *player) {
 		c.spr.changeFrameCount = 0
 		c.spr.currentRow = 1
 
-		status.score++
+		status.killCount++
+		status.score += status.killCount
+
+		// Create star (or "pow!")
+		for i := 0; i < len(gobj.stars); i++ {
+			if gobj.stars[i].exist == false {
+				gobj.stars[i].create(vec2{x: pl.pos.x, y: pl.pos.y})
+				break
+			}
+		}
+
+		// Create a message
+		for i := 0; i < len(gobj.messages); i++ {
+			if gobj.messages[i].exist == false {
+				gobj.messages[i].create(vec2{x: pl.pos.x, y: c.pos.y - 4}, int(status.killCount))
+				break
+			}
+		}
 	}
 }
 
