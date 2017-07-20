@@ -48,6 +48,27 @@ func drawBitmapRegion(bmp bitmap, sx int32, sy int32, sw int32, sh int32, dx int
 }
 
 /**
+ * Draw a scaledbitmap region
+ *
+ * Params:
+ * bmp Bitmap
+ * sx Source X
+ * sy Source Y
+ * sw Source width
+ * sh Source height
+ * dx Destination X
+ * dy Destination Y
+ * dw Destination width
+ * dh Destination height
+ */
+func drawScaledBitmapRegion(bmp bitmap, sx int32, sy int32, sw int32, sh int32, dx int32, dy int32, dw int32, dh int32) {
+	rend := getRend()
+
+	rend.Copy(bmp.texture, &sdl.Rect{X: sx, Y: sy, W: sw, H: sh},
+		&sdl.Rect{X: dx, Y: dy, W: dw, H: dh})
+}
+
+/**
  * Draw text with a bitmap font
  *
  * Params:

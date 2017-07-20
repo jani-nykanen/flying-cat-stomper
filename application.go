@@ -12,6 +12,7 @@ import (
 	"errors"
 
 	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -140,6 +141,13 @@ func initSDL() int {
 	// Init IMG addon
 	img.Init(img.INIT_PNG)
 
+	// Init audio
+	mix.Init(mix.INIT_OGG)
+	err = mix.OpenAudio(22050, mix.DEFAULT_FORMAT, 2, 1024)
+	if err != nil {
+		return 1
+	}
+
 	return 0
 }
 
@@ -179,6 +187,9 @@ func initialize() int {
 
 	// Set game the current scene
 	currentScene = sceneGame
+
+	// Set music playing
+	ass.music.FadeIn(-1, 1000)
 
 	// Set to running
 	isRunning = true

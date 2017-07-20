@@ -13,7 +13,77 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-// Player struct
+/// "Whitening"
+type whitening struct {
+	pos   vec2
+	timer float32
+	exist bool
+	spr   sprite
+}
+
+/**
+ * Create new, non-existent whitening
+ *
+ * Returns:
+ * A new whitening
+ */
+func newWhitening() whitening {
+	var w whitening
+
+	w.exist = false
+	w.spr = createSprite(48, 48)
+
+	return w
+}
+
+/**
+ * Create "whitening"
+ *
+ * Params:
+ * pos Position
+ */
+func (wh *whitening) create(pos vec2, column, row int) {
+	wh.pos = pos
+	wh.exist = true
+	wh.timer = 60
+	wh.spr.currentFrame = column
+	wh.spr.currentRow = row
+}
+
+/**
+ * Update whitening
+ *
+ * Params:
+ * timeMul Time multiplier
+ */
+func (wh *whitening) update(timeMul float32) {
+	if wh.exist {
+		wh.timer -= 1.75 * timeMul
+		if wh.timer <= 0.0 {
+			wh.exist = false
+		}
+	}
+}
+
+/**
+ * Draw whitening
+ *
+ * Params:
+ * bmp Bitmap
+ * rend Renderer
+ */
+func (wh *whitening) draw(bmp bitmap, rend *sdl.Renderer) {
+
+	if wh.exist {
+		scale := wh.timer / 60.0
+		dx := wh.pos.x - (scale)*24
+		dy := wh.pos.y - (scale)*24
+		wh.spr.drawScaled(bmp, rend, int32(dx), int32(dy), scale)
+	}
+
+}
+
+/// Player struct
 type player struct {
 	pos           vec2
 	spr           sprite
@@ -22,6 +92,8 @@ type player struct {
 	isPassive     bool
 	catTouchTimer float32
 	doubleJump    bool
+	white         [16]whitening
+	whiteTimer    float32
 }
 
 /**
@@ -39,6 +111,11 @@ func (pl *player) init(pos vec2) {
 	pl.isPassive = true
 	pl.doubleJump = false
 	pl.catTouchTimer = 0.0
+
+	for i := 0; i < 16; i++ {
+		pl.white[i] = newWhitening()
+	}
+	pl.whiteTimer = 10.0
 }
 
 /**
@@ -66,7 +143,7 @@ func (pl *player) control() {
 	pl.target.x = -deltaX
 
 	// Vertical movement
-	pl.target.y = 2.0
+	pl.target.y = 2.5
 
 	if getMouseButtonState(1) == StatePressed {
 
@@ -107,12 +184,12 @@ func (pl *player) move(timeMul float32) {
 
 	// Vertical speed
 	if pl.target.y > pl.speed.y {
-		pl.speed.y += 0.125 * timeMul
+		pl.speed.y += 0.15 * timeMul
 		if pl.speed.y > pl.target.y {
 			pl.speed.y = pl.target.y
 		}
 	} else if pl.target.y < pl.speed.y {
-		pl.speed.y -= 0.125 * timeMul
+		pl.speed.y -= 0.15 * timeMul
 		if pl.speed.y < pl.target.y {
 			pl.speed.y = pl.target.y
 		}
@@ -136,6 +213,29 @@ func (pl *player) move(timeMul float32) {
 		pl.pos.x = 64
 		pl.pos.y = 80
 		pl.isPassive = true
+	}
+}
+
+/**
+ * Create white
+ *
+ * Params:
+ * timeMul Time multiplier
+ */
+func (pl *player) createWhite(timeMul float32) {
+
+	// Create white
+	pl.whiteTimer -= 1.0 * timeMul
+	if pl.whiteTimer <= 0.0 {
+
+		for i := 0; i < len(pl.white); i++ {
+			if pl.white[i].exist == false {
+				pl.white[i].create(vec2{x: pl.pos.x, y: pl.pos.y - 20}, pl.spr.currentFrame, pl.spr.currentRow+2)
+				break
+			}
+		}
+
+		pl.whiteTimer += 5.0
 	}
 }
 
@@ -179,6 +279,13 @@ func (pl *player) update(timeMul float32) {
 		pl.catTouchTimer -= 1.0 * timeMul
 	}
 
+	// Create white
+	pl.createWhite(timeMul)
+
+	// Update white
+	for i := 0; i < len(pl.white); i++ {
+		pl.white[i].update(timeMul)
+	}
 }
 
 /**
@@ -189,6 +296,13 @@ func (pl *player) update(timeMul float32) {
  * rend Renderer
  */
 func (pl *player) draw(bmp bitmap, rend *sdl.Renderer) {
+
+	// Draw white
+	for i := 0; i < len(pl.white); i++ {
+		pl.white[i].draw(bmp, rend)
+	}
+
+	// Draw player
 	pl.spr.draw(bmp, rend, int32(math.Floor(float64(pl.pos.x)-24)),
 		int32(math.Floor(float64(pl.pos.y)-44)))
 }

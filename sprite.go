@@ -97,3 +97,23 @@ func (spr *sprite) draw(bmp bitmap, rend *sdl.Renderer, dx, dy int32) {
 
 	drawBitmapRegion(bmp, x, y, int32(spr.width), int32(spr.height), dx, dy)
 }
+
+/**
+ * Draw a scaled sprite
+ *
+ * Params:
+ * bmp Bitmap
+ * rend Renderer
+ * dx Destination x
+ * dy Destination y
+ * scale Scale
+ */
+func (spr *sprite) drawScaled(bmp bitmap, rend *sdl.Renderer, dx, dy int32, scale float32) {
+	x := int32(spr.currentFrame * spr.width)
+	y := int32(spr.currentRow * spr.height)
+
+	dw := int32(scale * float32(spr.width))
+	dh := int32(scale * float32(spr.height))
+
+	drawScaledBitmapRegion(bmp, x, y, int32(spr.width), int32(spr.height), dx, dy, dw, dh)
+}

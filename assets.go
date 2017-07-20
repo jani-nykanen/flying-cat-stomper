@@ -13,6 +13,7 @@ package main
 
 import (
 	"github.com/veandco/go-sdl2/img"
+	"github.com/veandco/go-sdl2/mix"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -33,6 +34,7 @@ type bitmap struct {
 /// A struct that contains all the assets
 type assets struct {
 	bitmaps []bitmap
+	music   *mix.Music
 }
 
 /**
@@ -127,9 +129,19 @@ func loadAssets(rend *sdl.Renderer) (assets, int) {
 	var ass assets
 
 	var errCode int
+	var err error
 
+	// Load bitmaps
 	errCode, ass.bitmaps = loadBitmaps(rend)
 	if errCode == 1 {
+		return ass, 1
+	}
+
+	// Load music
+	path := "assets/music/theme.ogg"
+	ass.music, err = mix.LoadMUS("assets/music/theme.ogg")
+	if err != nil {
+		setErr("Failed to load a bitmap in " + path)
 		return ass, 1
 	}
 
