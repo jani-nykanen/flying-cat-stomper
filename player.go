@@ -153,7 +153,7 @@ func (pl *player) control() {
 		if !pl.doubleJump {
 			pl.doubleJump = true
 			pl.speed.y = -4.0
-			pl.bmpJump.play(0.8)
+			pl.bmpJump.play(0.45)
 		}
 	}
 

@@ -103,6 +103,7 @@ func loadBitmaps(rend *sdl.Renderer) (int, []bitmap) {
 		stringPair{path: "assets/bitmaps/cats.png", name: "cats"},
 		stringPair{path: "assets/bitmaps/bunny.png", name: "bunny"},
 		stringPair{path: "assets/bitmaps/star.png", name: "star"},
+		stringPair{path: "assets/bitmaps/gas.png", name: "gas"},
 	}
 
 	var errCode int

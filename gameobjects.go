@@ -20,6 +20,7 @@ type gameobjects struct {
 	bmpCats   bitmap
 	bmpBunny  bitmap
 	bmpStar   bitmap
+	bmpGas    bitmap
 	sndHurt   sound
 	genTimer  float32
 	catPos    float32
@@ -27,6 +28,7 @@ type gameobjects struct {
 	stars     [8]star
 	messages  [8]message
 	spcCount1 int
+	spcCount2 int
 }
 
 /// Game objects global object
@@ -43,6 +45,7 @@ func (gob *gameobjects) init(ass assets) {
 	gob.bmpCats = ass.getBitmap("cats")
 	gob.bmpBunny = ass.getBitmap("bunny")
 	gob.bmpStar = ass.getBitmap("star")
+	gob.bmpGas = ass.getBitmap("gas")
 
 	// Set sounds
 	gob.sndHurt = ass.getSound("hurt")
@@ -62,6 +65,7 @@ func (gob *gameobjects) init(ass assets) {
 	gob.genTimer = 0.0
 	gob.catPos = 120.0
 	gob.spcCount1 = int(rand.Float32()*4 + 4)
+	gob.spcCount2 = 1
 
 	// Init stars
 	for i := 0; i < 8; i++ {
@@ -85,8 +89,18 @@ func (gob *gameobjects) init(ass assets) {
  */
 func (gob *gameobjects) putCat(x, y float32, id int) {
 
+	start := 0
+	end := len(gob.cats) - 1
+	step := 1
+
+	if id == 2 {
+		start = end
+		end = 0
+		step = -1
+	}
+
 	// Go through the array of cats
-	for i := 0; i < len(gob.cats); i++ {
+	for i := start; i != end; i += step {
 		// If not exist, create
 		if gob.cats[i].exist == false && gob.cats[i].dead == false {
 			gob.cats[i].createCat(x, y, id)
@@ -139,11 +153,22 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 		}
 		gob.catPos += posDelta
 
+		createAnother := false
+
 		if gob.catPos > 96 && gob.catPos < 192 {
 			gob.spcCount1--
 			if gob.spcCount1 <= 0 {
 				targetID = 1
-				gob.spcCount1 = int(rand.Float32() + 4)
+				gob.spcCount1 = int(rand.Float32()*6 + 1)
+				createAnother = true
+			}
+		}
+
+		if !createAnother {
+			gob.spcCount2--
+			if gob.spcCount2 <= 0 {
+				targetID = 2
+				gob.spcCount2 = int(rand.Float32()*5 + 2)
 			}
 		}
 
@@ -163,7 +188,7 @@ func (gob *gameobjects) draw(rend *sdl.Renderer) {
 
 	// Draw cats
 	for i := 0; i < len(gob.cats); i++ {
-		gob.cats[i].draw(gob.bmpCats, rend)
+		gob.cats[i].draw(gob.bmpCats, gob.bmpGas, rend)
 	}
 
 	// Draw stars
