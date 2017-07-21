@@ -135,6 +135,7 @@ func loadSounds() (int, []sound) {
 		stringPair{path: "assets/sounds/hurt.wav", name: "hurt"},
 		stringPair{path: "assets/sounds/jump.wav", name: "jump"},
 		stringPair{path: "assets/sounds/destroy.wav", name: "destroy"},
+		stringPair{path: "assets/sounds/die.wav", name: "die"},
 	}
 
 	var errCode int

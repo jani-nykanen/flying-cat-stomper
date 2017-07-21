@@ -9,6 +9,7 @@ package main
 
 import (
 	"math"
+	"math/rand"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -94,7 +95,10 @@ type player struct {
 	doubleJump    bool
 	white         [16]whitening
 	whiteTimer    float32
-	bmpJump       sound
+	sndJump       sound
+	sndDie        sound
+	returning     bool
+	cloudPos      vec2
 }
 
 /**
@@ -112,13 +116,17 @@ func (pl *player) init(pos vec2, ass assets) {
 	pl.isPassive = true
 	pl.doubleJump = false
 	pl.catTouchTimer = 0.0
+	pl.returning = false
+	pl.cloudPos.x = pl.pos.x
+	pl.cloudPos.y = pl.pos.y
 
 	for i := 0; i < 16; i++ {
 		pl.white[i] = newWhitening()
 	}
 	pl.whiteTimer = 10.0
 
-	pl.bmpJump = ass.getSound("jump")
+	pl.sndJump = ass.getSound("jump")
+	pl.sndDie = ass.getSound("die")
 }
 
 /**
@@ -126,11 +134,12 @@ func (pl *player) init(pos vec2, ass assets) {
  */
 func (pl *player) control() {
 
-	if pl.isPassive {
+	if pl.isPassive && !pl.returning {
 		if getMouseButtonState(1) == StatePressed {
 			pl.speed.y = -5.0
 			pl.isPassive = false
 			pl.doubleJump = false
+			pl.sndJump.play(0.45)
 			return
 		}
 		return
@@ -153,7 +162,7 @@ func (pl *player) control() {
 		if !pl.doubleJump {
 			pl.doubleJump = true
 			pl.speed.y = -4.0
-			pl.bmpJump.play(0.45)
+			pl.sndJump.play(0.45)
 		}
 	}
 
@@ -212,12 +221,44 @@ func (pl *player) move(timeMul float32) {
 		pl.speed.x = 0.0
 	}
 
-	// TODO: Death here
+	// Death
 	if pl.pos.y-96 > 240.0 {
+		pl.sndDie.play(0.7)
 		pl.pos.x = 64
-		pl.pos.y = 80
+		pl.returning = true
 		pl.isPassive = true
+		gobj.genTimer = 0.0
+		gobj.catPos = 120.0
+		gobj.spcCount1 = int(rand.Float32()*4 + 4)
+		gobj.spcCount2 = int(rand.Float32()*4 + 12)
+		gobj.spcCount3 = int(rand.Float32()*4 + 20)
+		status.score = 0
 	}
+}
+
+/**
+ * Return to the playfield
+ *
+ * Params:
+ * timeMul Time multiplier
+ */
+func (pl *player) returnMethod(timeMul float32) {
+
+	pl.pos.x = 64
+	pl.pos.y -= 1.25 * timeMul
+
+	pl.spr.animate(0, 1, 1, 0, timeMul)
+
+	pl.cloudPos.x = pl.pos.x
+	pl.cloudPos.y = pl.pos.y
+
+	if pl.pos.y <= 80 {
+		pl.pos.y = 80
+		pl.returning = false
+		pl.isPassive = true
+		globalSpeed = 1.5
+	}
+
 }
 
 /**
@@ -251,9 +292,27 @@ func (pl *player) createWhite(timeMul float32) {
  */
 func (pl *player) update(timeMul float32) {
 
+	// Update white
+	for i := 0; i < len(pl.white); i++ {
+		pl.white[i].update(timeMul)
+	}
+
+	// Update cloud
+	if !pl.isPassive && !pl.returning && pl.cloudPos.x > -32 {
+		pl.cloudPos.x -= globalSpeed * timeMul
+	}
+
+	if pl.returning {
+		pl.returnMethod(timeMul)
+		return
+	}
+
 	pl.control()
 	if !pl.isPassive {
 		pl.move(timeMul)
+	} else {
+		pl.spr.currentFrame = 1
+		return
 	}
 
 	// Animate
@@ -286,10 +345,6 @@ func (pl *player) update(timeMul float32) {
 	// Create white
 	pl.createWhite(timeMul)
 
-	// Update white
-	for i := 0; i < len(pl.white); i++ {
-		pl.white[i].update(timeMul)
-	}
 }
 
 /**
@@ -300,6 +355,11 @@ func (pl *player) update(timeMul float32) {
  * rend Renderer
  */
 func (pl *player) draw(bmp bitmap, rend *sdl.Renderer) {
+
+	// Draw cloud
+	if pl.cloudPos.x > -32 {
+		drawBitmapRegion(bmp, 0, 192, 64, 24, int32(pl.cloudPos.x)-32, int32(pl.cloudPos.y)-12)
+	}
 
 	// Draw white
 	for i := 0; i < len(pl.white); i++ {

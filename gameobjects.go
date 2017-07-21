@@ -148,7 +148,7 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 	targetID := 0
 
 	// Generate cats when the timer hits zero
-	if bg.flashTimer <= 30 {
+	if bg.flashTimer <= 30 && !gob.pl.returning {
 		gob.genTimer -= 1.0 * globalSpeed * timeMul
 		if gob.genTimer <= 0.0 {
 

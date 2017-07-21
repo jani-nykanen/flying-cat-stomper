@@ -192,6 +192,9 @@ func initialize() int {
 	mix.VolumeMusic(72)
 	ass.music.FadeIn(-1, 1000)
 
+	// Read score
+	readBest("hi.score")
+
 	// Set to running
 	isRunning = true
 
@@ -361,6 +364,9 @@ func draw() {
  * Destroys the application
  */
 func destroy() {
+
+	// Write best score
+	storeBest("hi.score")
 
 	// Destroy all the scenes
 	if sceneGame.onDestroy != nil {
