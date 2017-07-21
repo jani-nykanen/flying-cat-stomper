@@ -9,6 +9,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -27,6 +29,9 @@ type background struct {
 
 	/// Forest position
 	forestPost float32
+
+	// Flashing background
+	flashTimer float32
 }
 
 /// Background object
@@ -46,6 +51,7 @@ func (bg *background) init(ass assets) {
 
 	bg.mountainPos = 0.0
 	bg.forestPost = 0.0
+	bg.flashTimer = 0.0
 
 }
 
@@ -68,6 +74,11 @@ func (bg *background) update(timeMul float32, globalSpeed float32) {
 	if bg.forestPost <= -float32(bg.bmpForest.width) {
 		bg.forestPost += float32(bg.bmpForest.width)
 	}
+
+	// Update flash timer
+	if bg.flashTimer > 0.0 {
+		bg.flashTimer -= 1.0 * timeMul
+	}
 }
 
 /**
@@ -85,5 +96,12 @@ func (bg *background) draw(rend *sdl.Renderer) {
 
 	for i := int32(0); i < 2; i++ {
 		drawBitmap(bg.bmpForest, int32(bg.forestPost)+i*320, 240-96)
+	}
+
+	if bg.flashTimer > 0.0 {
+		if int(math.Floor(float64(bg.flashTimer)/4))%2 == 0 {
+			rend.SetDrawColor(255, 255, 255, 255)
+			rend.Clear()
+		}
 	}
 }

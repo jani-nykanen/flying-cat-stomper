@@ -213,7 +213,7 @@ func (pl *player) move(timeMul float32) {
 	}
 
 	// TODO: Death here
-	if pl.pos.y-44 > 240.0 {
+	if pl.pos.y-96 > 240.0 {
 		pl.pos.x = 64
 		pl.pos.y = 80
 		pl.isPassive = true

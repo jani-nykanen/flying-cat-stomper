@@ -155,7 +155,9 @@ func (c *cat) update(timeMul, globalSpeed float32) {
 
 	if c.exist == false {
 		if c.dead {
-			c.pos.y += 0.75 * timeMul
+			if c.typeid != 3 {
+				c.pos.y += 0.75 * timeMul
+			}
 			c.pos.x -= globalSpeed * timeMul
 			c.spr.animate(c.typeid*2+1, 0, 5, 5, timeMul)
 			if c.spr.currentFrame == 5 {
@@ -183,6 +185,9 @@ func (c *cat) update(timeMul, globalSpeed float32) {
 		c.pos.y = c.starty + float32(math.Floor((math.Sin(float64(c.sinMod)) * float64(c.waveHeight/2.0))))
 	} else if c.typeid == 2 {
 		c.speed += 0.015 * timeMul
+	} else if c.typeid == 3 {
+		c.sinMod += 0.06 * timeMul
+		c.pos.y = c.starty + float32(math.Sin(float64(c.sinMod))*16)
 	}
 
 	if c.typeid == 2 {
@@ -219,7 +224,7 @@ func (c *cat) update(timeMul, globalSpeed float32) {
  * pl Player object
  */
 func (c *cat) onPlayerCollision(pl *player) {
-	if c.exist == false {
+	if c.exist == false || pl.isPassive {
 		return
 	}
 
@@ -254,7 +259,23 @@ func (c *cat) onPlayerCollision(pl *player) {
 			}
 		}
 
-		gobj.sndHurt.play(0.35)
+		if c.typeid == 3 {
+			gobj.sndDestroy.play(0.5)
+
+			for i := 0; i < len(gobj.cats); i++ {
+				if gobj.cats[i].exist == true {
+					gobj.cats[i].dead = true
+					gobj.cats[i].exist = false
+					gobj.cats[i].spr.currentFrame = 0
+					gobj.cats[i].spr.changeFrameCount = 0
+					gobj.cats[i].spr.currentRow = 2*c.typeid + 1
+				}
+			}
+			bg.flashTimer = 60.0
+
+		} else {
+			gobj.sndHurt.play(0.35)
+		}
 	}
 }
 

@@ -16,19 +16,21 @@ import (
 
 /// Game objects
 type gameobjects struct {
-	cats      [32]cat
-	bmpCats   bitmap
-	bmpBunny  bitmap
-	bmpStar   bitmap
-	bmpGas    bitmap
-	sndHurt   sound
-	genTimer  float32
-	catPos    float32
-	pl        player
-	stars     [8]star
-	messages  [8]message
-	spcCount1 int
-	spcCount2 int
+	cats       [32]cat
+	bmpCats    bitmap
+	bmpBunny   bitmap
+	bmpStar    bitmap
+	bmpGas     bitmap
+	sndHurt    sound
+	sndDestroy sound
+	genTimer   float32
+	catPos     float32
+	pl         player
+	stars      [8]star
+	messages   [8]message
+	spcCount1  int
+	spcCount2  int
+	spcCount3  int
 }
 
 /// Game objects global object
@@ -49,6 +51,7 @@ func (gob *gameobjects) init(ass assets) {
 
 	// Set sounds
 	gob.sndHurt = ass.getSound("hurt")
+	gob.sndDestroy = ass.getSound("destroy")
 
 	// Set seed
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -65,7 +68,8 @@ func (gob *gameobjects) init(ass assets) {
 	gob.genTimer = 0.0
 	gob.catPos = 120.0
 	gob.spcCount1 = int(rand.Float32()*4 + 4)
-	gob.spcCount2 = 1
+	gob.spcCount2 = int(rand.Float32()*4 + 12)
+	gob.spcCount3 = int(rand.Float32()*4 + 20)
 
 	// Init stars
 	for i := 0; i < 8; i++ {
@@ -144,37 +148,50 @@ func (gob *gameobjects) update(timeMul, globalSpeed float32) {
 	targetID := 0
 
 	// Generate cats when the timer hits zero
-	gob.genTimer -= 1.0 * globalSpeed * timeMul
-	if gob.genTimer <= 0.0 {
+	if bg.flashTimer <= 30 {
+		gob.genTimer -= 1.0 * globalSpeed * timeMul
+		if gob.genTimer <= 0.0 {
 
-		posDelta := rand.Float32()*(160) - 80
-		if (posDelta > 0.0 && gob.catPos+posDelta > 240-32) || (posDelta < 0.0 && gob.catPos+posDelta < 80) {
-			posDelta *= -1
-		}
-		gob.catPos += posDelta
-
-		createAnother := false
-
-		if gob.catPos > 96 && gob.catPos < 192 {
-			gob.spcCount1--
-			if gob.spcCount1 <= 0 {
-				targetID = 1
-				gob.spcCount1 = int(rand.Float32()*6 + 1)
-				createAnother = true
+			posDelta := rand.Float32()*(160) - 80
+			if (posDelta > 0.0 && gob.catPos+posDelta > 240-32) || (posDelta < 0.0 && gob.catPos+posDelta < 80) {
+				posDelta *= -1
 			}
-		}
+			gob.catPos += posDelta
 
-		if !createAnother {
-			gob.spcCount2--
-			if gob.spcCount2 <= 0 {
-				targetID = 2
-				gob.spcCount2 = int(rand.Float32()*5 + 2)
+			createAnother := false
+
+			if gob.catPos > 96 && gob.catPos < 192 {
+				gob.spcCount1--
+				if gob.spcCount1 <= 0 {
+					targetID = 1
+					gob.spcCount1 = int(rand.Float32()*6 + 1)
+					createAnother = true
+				}
 			}
+
+			if !createAnother {
+				gob.spcCount2--
+				if gob.spcCount2 <= 0 {
+					targetID = 2
+					gob.spcCount2 = int(rand.Float32()*5 + 2)
+					createAnother = true
+				}
+
+				if !createAnother {
+					gob.spcCount3--
+					if gob.spcCount3 <= 0 {
+						targetID = 3
+						gob.spcCount3 = int(rand.Float32()*5 + 3)
+						createAnother = true
+					}
+				}
+			}
+
+			gob.putCat(320+24, gob.catPos, targetID)
+
+			gob.genTimer += 90.0
 		}
 
-		gob.putCat(320+24, gob.catPos, targetID)
-
-		gob.genTimer += 90.0
 	}
 }
 
