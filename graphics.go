@@ -13,6 +13,12 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+/// Rect dest
+var recDest sdl.Rect
+
+// Rect src
+var recSrc sdl.Rect
+
 /**
  * Draw a bitmap
  *
@@ -24,8 +30,10 @@ import (
 func drawBitmap(bmp bitmap, x int32, y int32) {
 	rend := getRend()
 
-	rend.Copy(bmp.texture, &sdl.Rect{X: 0, Y: 0, W: bmp.width, H: bmp.height},
-		&sdl.Rect{X: x, Y: y, W: bmp.width, H: bmp.height})
+	recSrc = sdl.Rect{X: 0, Y: 0, W: bmp.width, H: bmp.height}
+	recDest = sdl.Rect{X: x, Y: y, W: bmp.width, H: bmp.height}
+
+	rend.Copy(bmp.texture, &recSrc, &recDest)
 }
 
 /**
@@ -43,8 +51,11 @@ func drawBitmap(bmp bitmap, x int32, y int32) {
 func drawBitmapRegion(bmp bitmap, sx int32, sy int32, sw int32, sh int32, dx int32, dy int32) {
 	rend := getRend()
 
-	rend.Copy(bmp.texture, &sdl.Rect{X: sx, Y: sy, W: sw, H: sh},
-		&sdl.Rect{X: dx, Y: dy, W: sw, H: sh})
+	recSrc = sdl.Rect{X: sx, Y: sy, W: sw, H: sh}
+	recDest = sdl.Rect{X: dx, Y: dy, W: sw, H: sh}
+
+	rend.Copy(bmp.texture, &recSrc,
+		&recDest)
 }
 
 /**
@@ -64,8 +75,11 @@ func drawBitmapRegion(bmp bitmap, sx int32, sy int32, sw int32, sh int32, dx int
 func drawScaledBitmapRegion(bmp bitmap, sx int32, sy int32, sw int32, sh int32, dx int32, dy int32, dw int32, dh int32) {
 	rend := getRend()
 
-	rend.Copy(bmp.texture, &sdl.Rect{X: sx, Y: sy, W: sw, H: sh},
-		&sdl.Rect{X: dx, Y: dy, W: dw, H: dh})
+	recSrc = sdl.Rect{X: sx, Y: sy, W: sw, H: sh}
+	recDest = sdl.Rect{X: dx, Y: dy, W: dw, H: dh}
+
+	rend.Copy(bmp.texture, &recSrc,
+		&recDest)
 }
 
 /**

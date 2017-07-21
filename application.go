@@ -351,9 +351,11 @@ func draw() {
 	// Draw to canvas
 	drawToCanvas()
 
+	recSrc = sdl.Rect{X: 0, Y: 0, W: 320, H: 240}
+	recDest = sdl.Rect{X: int32(canvasPos.x), Y: int32(canvasPos.y), W: int32(canvasSize.x), H: int32(canvasSize.y)}
+
 	// Draw canvas
-	rend.Copy(canvas, &sdl.Rect{X: 0, Y: 0, W: 320, H: 240},
-		&sdl.Rect{X: int32(canvasPos.x), Y: int32(canvasPos.y), W: int32(canvasSize.x), H: int32(canvasSize.y)})
+	rend.Copy(canvas, &recSrc, &recDest)
 
 	// Refresh screen
 	rend.Present()
