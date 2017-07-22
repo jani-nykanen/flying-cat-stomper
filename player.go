@@ -244,7 +244,7 @@ func (pl *player) move(timeMul float32) {
  */
 func (pl *player) returnMethod(timeMul float32) {
 
-	pl.pos.x = 64
+	pl.pos.x = 64 + float32(math.Sin(float64((pl.pos.y-80)/32)))*16
 	pl.pos.y -= 1.25 * timeMul
 
 	pl.spr.animate(0, 1, 1, 0, timeMul)

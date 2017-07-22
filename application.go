@@ -65,6 +65,9 @@ var sceneGame scene
 // Current scene
 var currentScene scene
 
+// Ask quitting
+var askQuit bool
+
 // Assets
 var ass assets
 
@@ -92,6 +95,47 @@ func setErr(msg string) {
  */
 func getRend() *sdl.Renderer {
 	return rend
+}
+
+/**
+ * Confirm if the user truly wants to quit
+ *
+ * Returns:
+ * True if true (eheheh)
+ */
+func confirmExit() int32 {
+
+	buttons := []sdl.MessageBoxButtonData{
+		{sdl.MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No"},
+		{sdl.MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
+	}
+
+	colorScheme := sdl.MessageBoxColorScheme{
+		Colors: [5]sdl.MessageBoxColor{
+			sdl.MessageBoxColor{R: 170, G: 170, B: 170},
+			sdl.MessageBoxColor{R: 255, G: 255, B: 255},
+			sdl.MessageBoxColor{R: 255, G: 255, B: 255},
+			sdl.MessageBoxColor{R: 85, G: 85, B: 85},
+			sdl.MessageBoxColor{R: 255, G: 255, B: 0},
+		},
+	}
+
+	messageboxdata := sdl.MessageBoxData{
+		Flags:       sdl.MESSAGEBOX_INFORMATION,
+		Window:      window,
+		Title:       "Confirm",
+		Message:     "Are you sure you want to quit?",
+		NumButtons:  int32(len(buttons)),
+		Buttons:     buttons,
+		ColorScheme: &colorScheme,
+	}
+
+	var buttonid int32
+	_, buttonid = sdl.ShowMessageBox(&messageboxdata)
+
+	askQuit = true
+
+	return buttonid
 }
 
 /**
@@ -177,6 +221,8 @@ func initialize() int {
 
 	bmpCursor = ass.getBitmap("cursor")
 
+	askQuit = false
+
 	// Create game scene and initilize it
 	sceneGame = gameGetScene()
 	if sceneGame.onInit != nil {
@@ -211,7 +257,10 @@ func events() {
 		switch t := event.(type) {
 
 		case *sdl.QuitEvent:
-			isRunning = false
+			if confirmExit() == 1 {
+				isRunning = false
+
+			}
 
 		case *sdl.KeyDownEvent:
 			onKeyDown(uint(t.Keysym.Scancode))
@@ -292,6 +341,12 @@ func update(deltaTime uint32) {
 	// If F4 is pressed, go to the full screen mode
 	if getKeyState(sdl.SCANCODE_F4) == StatePressed {
 		toggleFullscreen()
+	}
+
+	// If esc pressed, ask if want to quit
+	if getKeyState(sdl.SCANCODE_ESCAPE) == StatePressed && confirmExit() == 1 {
+		isRunning = false
+		return
 	}
 
 	// Update current scene, if update function defined
@@ -398,12 +453,24 @@ func run() int {
 	// Loop if running
 	for isRunning {
 
+		askQuit = false
+
 		// Time before the frame events
 		oldTicks = sdl.GetTicks()
 
 		// Do frame events
 		events()
+		// Needed for quitting
+		if !isRunning {
+			break
+		}
+
 		update(deltaTime)
+		// Needed for quitting
+		if !isRunning {
+			break
+		}
+
 		draw()
 
 		// Time after the frame events
@@ -414,7 +481,7 @@ func run() int {
 		restTime := (FRAMEWAIT - 1) - deltaMilliseconds
 
 		// Rest if needed
-		if restTime > 0 {
+		if !askQuit && restTime > 0 {
 			sdl.Delay(restTime)
 		}
 
