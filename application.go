@@ -477,12 +477,12 @@ func run() int {
 		newTicks = sdl.GetTicks()
 
 		// Get rest time
-		deltaMilliseconds := (newTicks - oldTicks)
+		deltaMilliseconds := (int32(newTicks) - int32(oldTicks))
 		restTime := (FRAMEWAIT - 1) - deltaMilliseconds
 
 		// Rest if needed
-		if !askQuit && restTime > 0 {
-			sdl.Delay(restTime)
+		if restTime > 0 {
+			sdl.Delay(uint32(restTime))
 		}
 
 		// Set delta time

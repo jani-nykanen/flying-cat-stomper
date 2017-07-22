@@ -18,6 +18,9 @@ var globalSpeed float32
 /// Speed up timer
 var speedUpTimer float32
 
+// Is paused
+var paused bool
+
 /**
  * Initialize the game scene
  *
@@ -41,6 +44,9 @@ func gameInit(ass assets) int {
 	// Init status
 	initStatus()
 
+	// Not paused
+	paused = false
+
 	return 0
 }
 
@@ -59,11 +65,22 @@ func gameUpdate(timeMul float32) {
 		globalSpeed += 0.15
 	}
 
+	if !hud.showTitle && hud.titleGoaway <= 0.0 && getKeyState(sdl.SCANCODE_RETURN) == StatePressed {
+		paused = !paused
+	}
+
+	// If scene is paused, do not update objects & events
+	if paused {
+		return
+	}
+
 	// Update background
 	bg.update(timeMul, globalSpeed)
 
-	// Update game objects
-	gobj.update(timeMul, globalSpeed)
+	if !hud.showTitle {
+		// Update game objects
+		gobj.update(timeMul, globalSpeed)
+	}
 
 	// Update HUD
 	hud.update(timeMul)
@@ -72,7 +89,6 @@ func gameUpdate(timeMul float32) {
 	if status.score > status.best {
 		status.best = status.score
 	}
-
 }
 
 /**
@@ -94,6 +110,11 @@ func gameDraw(rend *sdl.Renderer) {
 
 	// Draw HUD
 	hud.draw(rend)
+
+	// Draw "Paused" if paused
+	if paused {
+		drawCenteredText(hud.bmpFontBig, "Game Paused", 160, 96)
+	}
 }
 
 /**

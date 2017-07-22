@@ -104,6 +104,8 @@ func loadBitmaps(rend *sdl.Renderer) (int, []bitmap) {
 		stringPair{path: "assets/bitmaps/bunny.png", name: "bunny"},
 		stringPair{path: "assets/bitmaps/star.png", name: "star"},
 		stringPair{path: "assets/bitmaps/gas.png", name: "gas"},
+		stringPair{path: "assets/bitmaps/logo.png", name: "logo"},
+		stringPair{path: "assets/bitmaps/guide.png", name: "guide"},
 	}
 
 	var errCode int
@@ -136,6 +138,7 @@ func loadSounds() (int, []sound) {
 		stringPair{path: "assets/sounds/jump.wav", name: "jump"},
 		stringPair{path: "assets/sounds/destroy.wav", name: "destroy"},
 		stringPair{path: "assets/sounds/die.wav", name: "die"},
+		stringPair{path: "assets/sounds/start.wav", name: "start"},
 	}
 
 	var errCode int

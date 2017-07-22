@@ -62,7 +62,9 @@ func (gob *gameobjects) init(ass assets) {
 	}
 
 	// Init player
-	gob.pl.init(vec2{x: 64, y: 80}, ass)
+	gob.pl.init(vec2{x: 64, y: 288}, ass)
+	gob.pl.isPassive = true
+	gob.pl.returning = true
 
 	// Set generator values
 	gob.genTimer = 0.0
