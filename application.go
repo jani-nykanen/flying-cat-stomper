@@ -62,6 +62,9 @@ var isFullscreen bool
 // Game scene
 var sceneGame scene
 
+/// Creators scene
+var sceneCreators scene
+
 // Current scene
 var currentScene scene
 
@@ -231,12 +234,16 @@ func initialize() int {
 		}
 	}
 
-	// Set game the current scene
-	currentScene = sceneGame
+	// Initialize creators scene
+	sceneCreators = crGetScene()
+	if sceneCreators.onInit != nil {
+		if sceneCreators.onInit(ass) == 1 {
+			return 1
+		}
+	}
 
-	// Set music playing
-	mix.VolumeMusic(72)
-	ass.music.FadeIn(-1, 1000)
+	// Set game the current scene
+	currentScene = sceneCreators
 
 	// Read score
 	readBest("hi.score")
